@@ -1,0 +1,150 @@
+1a 1
+yaw11.10  pitch-3.30  roll2.90
+SPED6.06
+HIG-1.20
+BAT12.53
+Cur1 0 
+Cur2 0 
+Cur3 0 
+Cur4 0 
+fa  af  1a  1  0  6f  80  21  0  1d  3c  0  7d  0  0  0  0  0  0  1  ff  
+1a 1
+yaw11.20  pitch-3.30  roll3.00
+SPED0.00
+HIG-1.10
+BAT12.53
+Cur1 8 
+Cur2 0 
+Cur3 4 
+Cur4 8 
+fa  af  1a  1  0  70  80  21  0  1e  0  0  7d  8  0  0  4  80  0  53  ff  
+1a 1
+yaw11.20  pitch-3.20  roll3.00
+SPED4.65
+HIG-1.10
+BAT12.52
+Cur1 0 
+Cur2 16 
+Cur3 0 
+Cur4 0 
+fa  af  1a  1  0  70  80  20  0  1e  2e  0  7d  0  0  1  0  0  0  f5  ff  
+1a 1
+yaw11.30  pitch-3.20  roll3.00
+SPED0.00
+HIG-1.20
+BAT12.53
+Cur1 10 
+Cur2 0 
+Cur3 0 
+Cur4 2 
+fa  af  1a  1  0  70  80  20  0  1e  0  0  7d  a  0  0  0  20  0  f0  ff  
+1a 1
+yaw11.10  pitch-3.20  roll2.90
+SPED0.00
+HIG-1.10
+BAT12.54
+Cur1 10 
+Cur2 10 
+Cur3 0 
+Cur4 8 
+fa  af  1a  1  0  6f  80  20  0  1d  0  0  7d  a  a0  0  0  80  0  ee  ff  
+1a 1
+yaw11.20  pitch-3.20  roll3.00
+SPED3.65
+HIG-1.10
+BAT12.53
+Cur1 16 
+Cur2 2 
+Cur3 0 
+Cur4 6 
+fa  af  1a  1  0  70  80  20  0  1e  24  0  7d  10  20  0  0  60  0  7a  ff  
+1a 1
+yaw11.10  pitch-3.20  roll3.00
+SPED7.96
+HIG-1.10
+BAT12.53
+Cur1 0 
+Cur2 0 
+Cur3 0 
+Cur4 0 
+fa  af  1a  1  0  6f  80  20  0  1e  4f  0  7d  0  0  0  0  0  0  14  ff  
+1a 1
+yaw11.00  pitch-3.20  roll2.90
+SPED0.00
+HIG-1.20
+BAT12.53
+Cur1 2 
+Cur2 0 
+Cur3 0 
+Cur4 0 
+fa  af  1a  1  0  6e  80  20  0  1d  0  0  7d  2  0  0  0  0  0  c5  ff  
+1a 1
+yaw11.20  pitch-3.20  roll3.10
+SPED0.00
+HIG-1.20
+BAT12.53
+Cur1 4 
+Cur2 4 
+Cur3 0 
+Cur4 12 
+fa  af  1a  1  0  70  80  20  0  1f  0  0  7d  4  40  0  0  c0  0  cb  ff  
+1a 1
+yaw11.20  pitch-3.20  roll3.00
+SPED5.77
+HIG-1.20
+BAT12.52
+Cur1 0 
+Cur2 2 
+Cur3 0 
+Cur4 0 
+fa  af  1a  1  0  70  80  20  0  1e  39  0  7d  0  20  0  0  0  0  1f  ff  
+1a 1
+yaw11.20  pitch-3.20  roll3.00
+SPED11.55
+HIG-1.20
+BAT12.53
+Cur1 12 
+Cur2 0 
+Cur3 0 
+Cur4 0 
+fa  af  1a  1  0  70  80  20  0  1e  73  0  7d  c  0  0  0  0  0  45  ff  
+1a 1
+yaw11.10  pitch-3.20  roll2.80
+SPED6.06
+HIG-1.20
+BAT12.53
+Cur1 0 
+Cur2 0 
+Cur3 0 
+Cur4 0 
+fa  af  1a  1  0  6f  80  20  0  1c  3c  0  7d  0  0  0  0  0  0  ff  ff  
+1a 1
+yaw11.30  pitch-3.20  roll3.00
+SPED6.45
+HIG-1.20
+BAT12.51
+Cur1 6 
+Cur2 4 
+Cur3 0 
+Cur4 0 
+fa  af  1a  1  0  71  80  20  0  1e  40  0  7d  6  40  0  0  0  0  4d  ff  
+1a 1
+yaw11.30  pitch-3.20  roll3.00
+SPED9.40
+HIG-1.20
+BAT12.52
+Cur1 0 
+Cur2 0 
+Cur3 4 
+Cur4 0 
+fa  af  1a  1  0  71  80  20  0  1e  5d  0  7d  0  0  0  4  0  0  28  ff  
+1a 1
+yaw11.40  pitch-3.20  roll3.00
+SPED0.00
+HIG-1.30
+BAT12.53
+Cur1 0 
+Cur2 0 
+Cur3 0 
+Cur4 4 
+fa  af  1a  1  0  72  80  20  0  1e  0  0  7d  0  0  0  0  40  0  8  ff  

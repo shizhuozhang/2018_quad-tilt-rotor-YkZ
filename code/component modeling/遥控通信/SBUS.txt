@@ -1,0 +1,69 @@
+ SBUS协议：
+
+使用的是串口的通讯，直接可以用串口发出和接收，但有几点仍需要注意：
+ 
+1.串口配置：100k波特率，8位数据位（在stm32中要选择9位），偶校验（EVEN),2位停止位，无控流，25个字节的数据包， 
+
+2.协议格式：（8字节） [startbyte] [data1][data2]……[data22][flags][endbyte] 
+
+起始字节startbyte = 11110000b (0xF0)，但实际上用STM32（据说ARM核）收到的是0x0F。
+
+data1…data22:对应16个通道（ch1-ch16），每个通道11bit（22*8=16*11=176）; 数据范围在0-2047之间，基本上是1102~1927，中值为1500；
+
+ch1的11位=data2的低3位+data1的8位； 例如：data1=00110110，data2=11001111； 这时ch1=111 00110110=1846；通道1 的值就为1846； 
+
+ch2=data3的低6位+data2的高5位； 
+ch3=data5的低1位+data4的8位+data3的高2位； 
+ch4=4 7; ch5=7 4; ch6=2 8 1; ch7=5 6; ch8=8 3; ch9=6 5; ch10=1 8 2; ch11=4 7; ch12=7 4; ch13=2 8 1; ch14=5 6; ch15=8 3; ch16=6 5; 
+
+
+头  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 fg 尾
+0F 00 34 1F A8 09 08 6A 50 03 10 80 00 04 20 00 01 08 07 38 00 10 80 00 04
+0F 00 34 1F A8 09 08 6A 50 03 10 80 00 04 20 00 01 08 07 38 00 10 80 00 14
+0F 00 34 1F A8 09 08 6A 50 03 10 80 00 04 20 00 01 08 07 38 00 10 80 00 24
+0F 00 34 1F A8 09 08 6A 50 03 10 80 00 04 20 00 01 08 07 38 00 10 80 00 34
+0F 00 34 1F A8 09 08 6A 50 03 10 80 00 04 20 00 01 08 07 38 00 10 80 00 04
+0F 00 34 1F A8 09 08 6A 50 03 10 80 00 04 20 00 01 08 07 38 00 10 80 00 14
+0F 00 34 1F A8 09 08 6A 50 03 10 80 00 04 20 00 01 08 07 38 00 10 80 00 24
+0F 00 34 1F A8 09 08 6A 50 03 10 80 00 04 20 00 01 08 07 38 00 10 80 00 34
+0F 00 34 1F A8 09 08 6A 50 03 10 80 00 04 20 00 01 08 07 38 00 10 80 00 04
+0F 00 34 1F A8 09 08 6A 50 03 10 80 00 04 20 00 01 08 07 38 00 10 80 00 14
+0F 00 34 1F A8 09 08 6A 50 03 10 80 00 04 20 00 01 08 07 38 00 10 80 00 24
+
+
+3、间隔问题：
+
+它分两种模式（高速模式和普通模式） 
+高速模式：每隔7ms一帧数据，因为两帧的间隔只有超过3ms，才会被接受；根据波特率计算一下，发送25字节需要的时间+4ms，约7ms一帧
+普通模式：每隔14ms一帧数据；控制率为71.4HZ。
+
+
+
+4、首先通过硬件电路进行电平反向,得到型符合标准串行通信接口的TTL电平信号
+
+在STM32中的具体实现，除了配置串口参数，还需要写好中断函数，写好解析函数。
+
+思路很简单，利用间隔时间来区分两帧，收到一帧数据后，做如下检查：
+1.       字节数够不够？
+2.       第一个字节是不是0x0f？
+3.       最后一个字节是不是0x00?
+4.       检查flag中的标志位
+
+
+
+SBUS数据包的结构与基本协议
+IntroductionThe Futaba S-BUS protocol is a serial protocol to control servos. Up to 16 proportional and two digital channels are available. The protocol is derived from the very known RS232 protocol used everywhere. The signal must be first inverted. The frame is 8E2.This board provide a complete electrical separation of RC gear and mbed controller. The S-BUS serial signal is converted and isolated by optocoppler. To keep control of the plane/car/ship an additional controller (ATTINY13) is on board. It monitors a standard servo signal (Master) and sends the serial S-BUS signal either to the mbed or directly to the servos. A special 'middle' position sends the S-BUS data to the servos and the mbed. In this mode the mbed can check stick positions and range without sending data to servos. Because the S-BUS data contains the Master signal, mbed knows about this mode.S-BUS protocolThe protocol is 25 Byte long and is send every 14ms (analog mode) or 7ms (highspeed mode).
+One Byte = 1 startbit + 8 databit + 1 paritybit + 2 stopbit (8E2), baudrate = 100'000 bit/s
+The highest bit is send first. The logic is inverted (Level High = 1) .... startbyte = 11110000b (0xF0)data 1-22 = .... (ch# = 0 bis 2047)
+channel 1 uses 8 bits from data1 and 3 bits from data2
+channel 2 uses last 5 bits from data2 and 6 bits from data3
+etc.flags = bit7 = ch17 = digital channel (0x80)
+bit6 = ch18 = digital channel (0x40)
+bit5 = Frame lost, equivalent red LED on receiver (0x20)
+bit4 = failsafe activated (0x10)
+bit3 = n/a
+bit2 = n/a
+bit1 = n/a
+bit0 = n/aendbyte = 00000000b
+
+

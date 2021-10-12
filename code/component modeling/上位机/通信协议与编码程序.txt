@@ -1,0 +1,100 @@
+数据帧包含有帧头、系统控制信息、系统异常信息、系统状态信息、电源使用情况、校验字节以及帧尾，共计21字节的数据。
+具体帧格式见QQ图片
+
+串口配置：波特率115200、8位数据位、1位停止位、无奇偶校验
+
+上位机实现功能：
+1、接收数据，校验数据，解算数据
+
+2、 直接显示状态的量：Config和Abnormal_sign（一个或两个状态栏）；四个电流值（一个状态栏）
+
+3、需要以曲线形式显示变化情况的量：三个姿态角；飞行速度；飞行高度；不同变量的曲线用不同的颜色显示；数据能够回放，即以前的数据不丢失（设定一段时间，比如当前时刻之前30秒内的数据不丢失）；保存一段时间的数据，保存为txt文件
+
+//操控模式
+#define AUTO_FLY		1	//自主飞行，只适应于直升机和倾转过渡模式
+#define MANUAL_FLY		0	//手动飞行，适用于直升机和固定翼模式
+
+//飞行模式
+#define ON_GROUND		0X00	//未起飞
+#define HELICOPTER		0x01	//直升机模式
+#define TILT_TRANS		0x02	//倾转过渡模式
+#define AIRPLAN			0x03	//固定翼模式
+
+u8 Plane_Unlock=0;//飞机解锁情况，1时为解锁，0为上锁
+u8 Ctrl_Mod=0;//操控方式，1为自动飞行、0为手动飞行
+u8 Tilt_En=0;//倾转使能、1为使能倾转、0位不倾转
+u8 Abnormal_sign=0;//8bits分别对应8种类型的异常情况，
+//Abnormal_sign的说明:
+//bit0:遥控器信号丢失；bit1:AHRS信号丢失；bit2:电池电量过低;bit3:系统功率过载；
+//bit4:飞行器未解锁；bit5:自动转手动模式后，地面端无操控响应；bit6:;bit7:系统软件有bug
+
+//编码打包程序		
+u8 Send_to_GRO[21]={0};
+void Data_Pack(void)
+{
+	u8 t=0;
+	u8 Config=0;
+	u16 Sum_Ju=0;
+	Send_to_GRO[0]=0xFA;//帧头0xFA,0xAF
+	Send_to_GRO[1]=0xAF;	
+	
+	//系统设置情况
+	Config|=Ctrl_Mod<<0;//系统配置0位为操控模式
+	Config|=Plane_Unlock<<1;//系统配置1位为解锁情况
+	Config|=Tilt_En<<2;//系统配置2位为倾转使能情况
+	Config|=ControL_Data[5]<<3;//系统配置3位为飞行使能情况//该位为1时表示允许飞行，为0时表示禁止飞行
+	Config|=(Fly_Mod&0x0f)<<4;//系统配置4-8位为当前飞行模式
+	Send_to_GRO[2]=Config;		
+	
+	Send_to_GRO[3]=Abnormal_sign;
+
+	//由于姿态角涉及小数和正负，转换耗时，因此直接使用AHRS数据//解码过程在下面
+	Send_to_GRO[4]=AHRS_DATA[2];//YAW_H
+	Send_to_GRO[5]=AHRS_DATA[3];//YAW_L
+	Send_to_GRO[6]=AHRS_DATA[4];//PITCH_H
+	Send_to_GRO[7]=AHRS_DATA[5];//PITCH_L
+	Send_to_GRO[8]=AHRS_DATA[6];//ROLL_H
+	Send_to_GRO[9]=AHRS_DATA[7];//ROLL_L
+	
+	//以下三个数据解码时直接将整形数据除以10就行
+	Send_to_GRO[10]=(u8)(Air_Speed*10.0f);//速度用一个字节，单位0.1米/秒，可表示最大速度为25.5米/秒
+	Send_to_GRO[11]=(u8)(Att_Angle.alt*10.0f);//高度用一个字节，单位0.1米，可表示最大高度为25.5米
+	Send_to_GRO[12]=(u8)(BAT_Voltage*10.0f);//电池电压用一个字节，单位0.1V，最大电压12.6V
+	
+	//数据解码反向移位即可，每12位为1个整形电流数据，可以转换为以A为单位
+	Send_to_GRO[13]=(u8)Current[1];	//用12位表示电流值，单位10mA	(ADC对电流的分辨率是20mA)
+	Send_to_GRO[14]=((u8)(Current[2]&0x000f)<<4)|(u8)((Current[1]&0x0f00)>>8);//
+	Send_to_GRO[15]=(u8)(Current[2]&0x0ff0)>>4;
+	Send_to_GRO[16]=(u8)Current[3];	
+	Send_to_GRO[17]=((u8)(Current[4]&0x000f)<<4)|(u8)((Current[3]&0x0f00)>>8);//
+	Send_to_GRO[18]=(u8)(Current[4]&0x0ff0)>>4;
+
+	for(t=2;t<19;t++)//2-17位累加的和取低字节做校验位
+		Sum_Ju+=Send_to_GRO[t];
+	Send_to_GRO[19]=(u8)(Sum_Ju & 0x00ff);//取低字节
+	Send_to_GRO[20]=0xFF;//帧尾0xFF
+}
+
+解姿态角程序：（结合编码过程，AHRS_DATA[2]-[7]对应Send_to_GRO[4]-[9]）
+		temp |= (s16)(((u16)AHRS_DATA[2]<<8)| AHRS_DATA[3]);
+		if(temp&0x8000)//根据协议规定，若为负值，则数据最高位是1，即最高位是符号位
+			temp = 0-(temp&0x7fff);
+		else
+			temp = (temp&0x7fff);
+		Att_Angle.yaw=(float)(temp / 10.0f); //偏航角
+		
+		temp = 0;
+		temp |= (s16)(((u16)AHRS_DATA[4]<<8)| AHRS_DATA[5]);
+		if(temp&0x8000)//根据协议规定，若为负值，则数据最高位是1，即最高位是符号位
+			temp = 0-(temp&0x7fff);
+		else
+			temp = (temp&0x7fff);
+		Att_Angle.pitch=(float)(temp / 10.0f); //俯仰角
+		
+		temp = 0;
+		temp |= (s16)(((u16)AHRS_DATA[6]<<8)| AHRS_DATA[7]);
+		if(temp&0x8000)//根据协议规定，若为负值，则数据最高位是1，即最高位是符号位
+			temp = 0-(temp&0x7fff);
+		else
+			temp = (temp&0x7fff);
+		Att_Angle.roll=(float)(temp / 10.0f); //滚转角
