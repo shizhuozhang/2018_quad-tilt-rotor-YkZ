@@ -33,4 +33,4 @@
   
   ***
   
-  感兴趣的同学想要进一步了解项目详情，可以联系我：yaokunz@hust.edu.cn
+  感兴趣的同学想要进一步了解项目详情，请联系我：yaokunz@hust.edu.cn
